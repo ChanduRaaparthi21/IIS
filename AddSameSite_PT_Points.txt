@@ -1,0 +1,33 @@
+http://10.24.62.86:8082/login.html/
+
+
+<rewrite>
+            <outboundRules>
+                <rule name="AddSameSiteCookie">
+                    <match serverVariable="RESPONSE_Set-Cookie" pattern="^(.*)(CFID|CFTOKEN|JSESSIONID)(=.*)$" />
+                    <action type="Rewrite" value="{R:0};SameSite=Strict" />
+                </rule>
+            </outboundRules>
+        </rewrite>
+		
+		
+		
+		
+		<rewrite>
+            <outboundRules>
+                <rule name="AddSameSiteCookie">
+                    <match serverVariable="RESPONSE_Set-Cookie" pattern="^(.*)(CFID|CFTOKEN|JSESSIONID)(=.*)$" />
+                    <action type="Rewrite" value="{R:0};SameSite=Strict" />
+                </rule>
+            </outboundRules>
+        </rewrite>
+		
+		
+		
+		<rewrite>
+            <outboundRules>
+      <clear />
+      <rule name="Add SameSite" preCondition="No SameSite">
+        <match serverVariable="RESPONSE_Set_Cookie" pattern=".*" negate="false" />
+        <action type="Rewrite" value="{R:0}; SameSite=None" />
+      </rule>

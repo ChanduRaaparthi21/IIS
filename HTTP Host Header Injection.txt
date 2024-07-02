@@ -1,0 +1,200 @@
+chrome.exe --disable-web-security
+
+Browser Cache Enabled####
+Name: Cache-Control
+Value : no-cache, no-store, must-revalidate,  private, public,max-age=43200000
+
+CONTENT SECURITY POLICY#####
+Name : Content-Security-Policy
+Value : default-src https: data: 'unsafe-inline' 'unsafe-eval'
+
+HTTP STRICT TRANSPORT SECURITY#####
+Name : Strict-Transport-Security 
+Value : max-age=31536000; includeSubdomains
+
+HTTP PUBLIC KEY PINNING#####
+Name : Public-Key-Pins
+Value : pin-sha256='X3pGTSOuJeEVw989IJ/cEtXUEmy52zs1TZQrU06KUKg='; pin-sha256='MHJYVThihUrJcxW6wcqyOISTXIsInsdj3xK8QrZbHec='; pin-sha256='isi41AizREkLvvft0IRW4u3XMFR2Yg7bvrF7padyCJg='; includeSubdomains; max-age=2592000
+
+X-FRAME-OPTIONS####
+Name : X-Frame-Options
+Value : SAMEORIGIN
+
+X-XSS-PROTECTION####
+Name : X-Xss-Protection
+Value : 1; mode=block
+
+X-CONTENT-TYPE-OPTIONS####
+Name : X-Content-Type-Options
+Value : nosniff
+
+
+<!--Sending the new X-Content-Type-Options response header with the value 'nosniff' will prevent Internet Explorer from MIME-sniffing a response away from the declared content-type. -->
+        <add name="X-Content-Type-Options" value="nosniff" />
+
+<!-- X-Frame-Options tells the browser whether you want to allow your site to be framed or not. By preventing a browser from framing your site you can defend against attacks like clickjacking. Recommended value "x-frame-options: SAMEORIGIN" -->
+        <add name="X-Frame-Options" value="SAMEORIGIN" />
+
+ <!-- Setting X-Permitted-Cross-Domain-Policies header to “master-only” will instruct Flash and PDF files that they should only read the master crossdomain.xml file from the root of the website.  https://www.adobe.com/devnet/articles/crossdomain_policy_file_spec.html -->
+        <add name="X-Permitted-Cross-Domain-Policies" value="master-only" />
+
+ <!-- X-XSS-Protection sets the configuration for the cross-site scripting filter built into most browsers.  Recommended value "X-XSS-Protection: 1; mode=block". -->
+        <add name="X-Xss-Protection" value="1; mode=block" />
+
+ <!-- Referrer-Policy allows a site to control how much information the browser includes with navigations away from a document and should be set by all sites. If you have sensitive information in your URLs, you don't want to forward to other domain 
+ "no-referrer",
+"no-referrer-when-downgrade",
+"same-origin",
+"origin",
+"strict-origin",
+"origin-when-cross-origin",
+"strict-origin-when-cross-origin",
+"unsafe-url"
+ -->
+        <add name="Referrer-Policy" value="no-referrer-when-downgrade" />
+
+
+<!-- Ensure the cache-control is public, some browser won't set expiration without that  -->
+        <add name="Cache-Control" value="public" />
+
+######X-ASPNET-VERSION####
+<system.web>
+    <httpRuntime enableVersionHeader="false" />
+</system.web>
+
+#######SERVER BANNER####
+
+Step 1 :-  Create Server Variables by add ..
+Add "RESPONSE_SERVER"
+Step 2 :-  Create Rule 
+Click on  Add Rules  > Select  Outbound 
+Change to Server_Variable
+Add  RESPONSE_SERVER
+ADD Value    “.+”
+Keep Rewrite and add fake name i.e. Let's Fly 
+Step 3 :- ead to the IIS Manager and select your site, then URL Rewrite.
+1- Select Server Variables and then add a new Server Variable called RESPONSE_SERVER.
+2- add below Line in web.conf under rewrite tag
+<rewrite>    
+    <outboundRules rewriteBeforeCache="true">
+        <rule name="Remove_Web_Server_header">
+            <match serverVariable="RESPONSE_Server" pattern=".+" />
+            <!-- Use custom value for the Server info -->
+            <action type="Rewrite" value="Decimal Server." />
+        </rule>
+    </outboundRules>
+</rewrite>
+
+####COOKIES SETTING####
+If Using SSL Certificate :-
+<httpCookies domain="" httpOnlyCookies="true" requireSSL="true" />
+
+If Using Nossl :-
+<httpCookies domain="" httpOnlyCookies="true" />
+
+
+####Missing Path Attribute In Session Cookie####
+>>>>>>
+<configuration>
+  <system.web>
+    <!-- Prevent access to cookies from other sub-domains -->
+    <httpCookies domain="app1.*.com" />
+  </system.web>
+</configuration>
+<httpCookies httpOnlyCookies="true" requireSSL="true" />
+
+<httpCookies domain="/" httpOnlyCookies="true" requireSSL="true" />
+
+#####Web Sever Banner Disclosure####
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	<add name="Access-Control-Allow-Origin" value="*" />
+    <add name="Access-Control-Allow-Methods" value="GET,POST,OPTIONS" />
+    <add name="Access-Control-Allow-Headers" value="Content-Type, soapaction" />
+	<add name="X-Frame-Options" value="SAMEORIGIN" />
+    <add name="Strict-Transport-Security" value="max-age=31536000; includeSubDomains"/>
+    <add name="X-XSS-Protection" value="1; mode=block" />
+    <add name="X-Content-Type-Options" value="nosniff" />
+    <add name="Content-Security-Policy" value="default-src 'self'; font-src *;img-src * data:; script-src *; style-src *;" />
+    <add name="Referrer-Policy" value="strict-origin" />
+	<add name="Cache-Control" value="no-cache, no-store, must-revalidate, pre-check=0, post-check=0, max-age=0, s-maxage=0" />
+	<add name="Pragma" value="no-cache" />
+	<add name="Expires" value="0" />
+	
+#####Microsoft ASP.NET MS-DOS Device Name DoS######
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+Change the maximum URL length to 2KB by specifying 2048.
+Change the maximum query string length to 1KB by specifying 1024.
+Deny access to unlisted HTTP verbs by clearing the Allow unlisted verbs check box.
+deny a URL sequence>>>>>>>.. & :
+deny access to a specific file name extension>>>>inc
+add a hidden segment>>>>>_private
+add limits for HTTP headers>>>>>>Content-type header to 100 bytes Size Limit.
+deny an HTTP verb>>>>>>>>>>>TRACE
+<configuration>
+   <system.webServer>
+      <security>
+         <requestFiltering>
+            <denyUrlSequences>
+               <add sequence=".." />
+               <add sequence=":" />
+            </denyUrlSequences>
+            <fileExtensions allowUnlisted="false" />
+            <requestLimits maxUrl="2048" maxQueryString="1024" />
+            <verbs allowUnlisted="false" />
+         </requestFiltering>
+      </security>
+   </system.webServer>
+</configuration>
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+1) Open web.config file. Should be located: C:\inetpub\SolarWinds\web.config
+2) Search for the row: <httpErrors errorMode="Detailed" />
+3) Change this entry to:
+<httpErrors errorMode="Detailed" existingResponse="PassThrough" />
+
+<system.webServer>
+      <httpErrors errorMode="DetailedLocalOnly" defaultResponseMode="File" >
+         <remove statusCode="500" />
+         <error statusCode="500"
+            prefixLanguageFilePath="C:\Contoso\Content\errors"
+            path="500.htm" />
+       </httpErrors>
+</system.webServer>
+	
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	<system.webServer>
+	<security>
+      <requestFiltering allowHighBitCharacters="false">
+        <verbs allowUnlisted="false">
+          <add verb="OPTIONS" allowed="false" />
+          <add verb="TRACE" allowed="false" />
+          <add verb="HEAD" allowed="false" />
+          <add verb="PUT" allowed="false" />
+          <add verb="DELETE" allowed="false" />
+          <add verb="CONNECT" allowed="false" />
+          <add verb="GET" allowed="true" />
+          <add verb="POST" allowed="true" />
+        </verbs>
+                <denyUrlSequences>
+                    <add sequence=".." />
+                    <add sequence=":" />
+                    <add sequence="\" />
+                    <add sequence="/AUX/" />
+                    <add sequence="/CON/" />
+                    <add sequence="/NUL/" />
+                    <add sequence="/PRN/" />
+                    <add sequence="/CLOCK$/" />
+                    <add sequence="/COM4/" />
+                    <add sequence="/COM3/" />
+                    <add sequence="/COM2/" />
+                    <add sequence="/LPT2/" />
+                    <add sequence="/LPT1/" />
+                    <add sequence="/COM1/" />
+                    <add sequence="/LPT4/" />
+                </denyUrlSequences>
+                <alwaysAllowedUrls>
+                </alwaysAllowedUrls>
+      </requestFiltering>
+    </security>	
+    </system.webServer>

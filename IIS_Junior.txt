@@ -1,0 +1,29 @@
+
+1) Cross-Origin Resource Sharing (CORS)
+Access-Control-Allow-Headers
+Content-Type, soapaction
+
+Access-Control-Allow-Methods
+GET, POST, PUT, DELETE, OPTIONS
+
+Access-Control-Allow-Origin
+*
+
+2) Insecure Content Security Policy (CSP)/X-Frame-Options
+X-Content-Type-Options
+nosniff
+
+X-Frame-Options
+SAMEORIGIN
+
+X-Xss-Protection
+1; mode=block
+
+3)  Browser Cache Enabled
+Cache-Control
+no-cache, no-store
+
+4)  Missing HSTS Header
+Strict-Transport-Security
+max-age=31536000; includeSubdomains
+

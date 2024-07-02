@@ -1,0 +1,35 @@
+**********
+C:\Program Files\Java\jdk1.8.0_333\jre\bin>keytool -genkey -alias cfdservbotapi.indusind.com -keyalg RSA -keysize 2048 -keystore E:\iworks\E:\iworks\yakub\cfdservbotapi.jks
+
+
+Enter keystore password:
+Re-enter new password:
+What is your first and last name?
+  [Unknown]:  iworksnxcab1.indusind.com
+What is the name of your organizational unit?
+  [Unknown]:  IT
+What is the name of your organization?
+  [Unknown]:  IndusInd Bank Limited
+What is the name of your City or Locality?
+  [Unknown]:  Mumbai
+What is the name of your State or Province?
+  [Unknown]:  Maharashtra
+What is the two-letter country code for this unit?
+  [Unknown]:  IN
+Is CN=iworksnxcab1.indusind.com, OU=IT, O=IndusInd Bank Limited, L=Mumbai, ST=Maharashtra, C=IN correct?
+  [no]:  yes
+
+Enter key password for <iworksnxcab1.indusind.com>
+        (RETURN if same as keystore password):
+Re-enter new password:
+
+Warning:
+The JKS keystore uses a proprietary format. It is recommended to migrate to PKCS12 which is an industry standard format using "keytool -importkeystore -srckeystore E:\iworks\iworksnxcab1\iworksnxcab1.jks -destkeystore E:\iworks\iworksnxcab1\iworksnxcab1.jks -deststoretype pkcs12".
+
+
+**************
+C:\Program Files\Java\jdk1.8.0_333\jre\bin>keytool -certreq -alias iworksnxcab1.indusind.com -keyalg RSA -file E:\iworks\iworksnxcab1\iworksnxcab1.csr -keystore E:\iworks\iworksnxcab1\iworksnxcab1.jks
+Enter keystore password:
+
+Warning:
+The JKS keystore uses a proprietary format. It is recommended to migrate to PKCS12 which is an industry standard format using "keytool -importkeystore -srckeystore E:\iworks\iworksnxcab1\iworksnxcab1.jks -destkeystore E:\iworks\iworksnxcab1\iworksnxcab1.jks -deststoretype pkcs12".

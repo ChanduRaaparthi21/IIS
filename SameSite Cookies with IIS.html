@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<!-- saved from url=(0040)https://www.petefreitag.com/item/850.cfm -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>SameSite Cookies with IIS</title>
+<meta name="keywords" content="iis,cookies,samesite,security">
+<meta name="author" content="Peter Freitag">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="alternate" type="application/rss+xml" title="RSS Feed for petefreitag.com" href="https://www.petefreitag.com/rss/">
+<link rel="stylesheet" href="./SameSite Cookies with IIS_files/pf.css" type="text/css">
+<meta property="og:title" content="SameSite Cookies with IIS">
+<meta property="og:image" content="https://www.petefreitag.com/ogimg/850">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="twitter:site" content="@pfreitag">
+<meta property="twitter:creator" content="@pfreitag">
+</head>
+<body>
+<header>
+<div class="brand"><a href="https://www.petefreitag.com/"><img src="./SameSite Cookies with IIS_files/pete-freitag-med-opt.jpg" height="50" width="50" alt="Pete Freitag" loading="lazy"> Pete Freitag</a></div>
+</header>
+<nav>
+<a href="https://www.petefreitag.com/" title="Read Blog Entries">Blog</a>
+<a href="https://foundeo.com/consulting/" title="Hire Me - ColdFusion, Java, Web Consulting">Consulting</a>
+<a href="https://foundeo.com/products/" title="Browse Products for ColdFusion Developers">Products</a>
+<a href="https://www.petefreitag.com/contact/" rel="nofollow">Contact</a>
+</nav>
+<main>
+<!-- google_ad_section_start -->
+<h1>SameSite Cookies with IIS</h1>
+<div class="container">
+<div class="row">
+<div class="col-sm-8"></div>
+<div class="col-sm-4"><a href="https://www.petefreitag.com/category/coldfusion.cfm" title="ColdFusion category"><img src="./SameSite Cookies with IIS_files/coldfusion.gif" loading="lazy" align="right" border="0" height="30" width="30" alt="coldfusion"></a><a href="https://www.petefreitag.com/category/java.cfm" title="Java category"><img src="./SameSite Cookies with IIS_files/java.gif" loading="lazy" align="right" border="0" height="30" width="30" alt="java"></a><a href="https://www.petefreitag.com/category/web.cfm" title="Web category"><img src="./SameSite Cookies with IIS_files/web.gif" loading="lazy" align="right" border="0" height="30" width="30" alt="web"></a></div>
+</div>
+<br>
+<div class="entryBody"><p><code><strong>SameSite</strong></code><strong> cookies</strong> are a great technique for mitigating Cross Site Request Forgery attacks. The only downside is that not all browsers support them yet (ahem... looking at you IE).</p>
+<p>Another downside you may find is that most application server software does not support them yet, for example <code>javax.servlet.http.Cookie</code> does not yet have support (so languages like CFML are probably waiting for this to add as well), PHP has a <a href="https://wiki.php.net/rfc/same-site-cookie">RFC</a> and hopes to add them in 7.3, ASP.NET Core has added them to 2.0 and .NET Framework 4.7.2.</p>
+<p>If your current platform doesn't support them yet but you want to use them, then you can use the web server to append the <code>SameSite</code> attribute to the <code>Set-Cooke</code> http response header.</p>
+<p>Here's how you can do it in IIS using the IIS URL Rewrite Module:</p>
+<ol>
+<li> Install Microsoft URL Rewrite for IIS: http://www.iis.net/downloads/microsoft/url-rewrite</li>
+<li> Close IIS, and open it again.</li>
+<li> Click On the root server level node of IIS (so that this is applicable to all sites on your server),</li>
+<li> Double Click on the URL Rewrite icon</li>
+<li> Click on <em>Add Rule(s)</em> </li>
+<li> Under <em>Outbound Rules</em> select <em>Blank Rule</em></li>
+<li> Give it an arbitrary name, eg <code>AddSameSiteCookieFlag</code></li>
+<li> Under Match, select Matching Scope: <code>Server Variable</code></li>
+<li> For Variable name use: <code>RESPONSE_Set-Cookie</code></li>
+<li> Variable Value: <code>Matches Pattern</code></li>
+<li> Using: <code>Regular Expressions</code></li>
+<li> Pattern: <code>^(.*)(CFID|CFTOKEN|JSESSIONID)(=.*)$</code> (that only applies to cookies named <code>CFIDE</code> <code>CFTOKEN</code> or <code>JSESSIONID</code>, modify as needed)</li>
+<li> Under Action, Action Type: <code>Rewrite</code></li>
+<li> Action Properties: Value: <code>{R:0};SameSite=lax</code> (if you existing cookie has a trailing semi-colin you can remove it here, you may also consider using <code>Strict</code> instead of <code>Lax</code>).</li>
+<li> Check <em>Replace existing server variable</em></li>
+</ol>
+<div align="center"><img src="./SameSite Cookies with IIS_files/iis-samesite-cookie.png" title="How to add IIS Same Site Cookies in IIS" alt="samesite cookies in iis"></div>
+<p>Or here's how you can add it to a single site using web.config files:</p>
+<pre class="pre-scrollable">&lt;rewrite&gt;
+            &lt;outboundRules&gt;
+                &lt;rule name="AddSameSiteCookieFlag"&gt;
+                    &lt;match serverVariable="RESPONSE_Set-Cookie" pattern="^(.*)(CFID|CFTOKEN|JSESSIONID)(=.*)$" /&gt;
+                    &lt;action type="Rewrite" value="{R:0};SameSite=lax" /&gt;
+                &lt;/rule&gt;
+            &lt;/outboundRules&gt;
+&lt;/rewrite&gt;
+</pre>
+</div>
+<br>
+<h4>Like this? Follow me ↯</h4>
+<a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww%2Epetefreitag%2Ecom%2Fitem%2F850%2Ecfm&amp;text=SameSite%20Cookies%20with%20IIS" rel="nofollow" class="twitter-button">Tweet</a>
+<a href="https://twitter.com/intent/follow?screen_name=pfreitag" rel="nofollow" class="twitter-button">Follow @pfreitag</a>
+<div class="tags">
+<br><a href="https://www.petefreitag.com/tag/iis" rel="tag">iis</a><a href="https://www.petefreitag.com/tag/cookies" rel="tag">cookies</a><a href="https://www.petefreitag.com/tag/samesite" rel="tag">samesite</a><a href="https://www.petefreitag.com/tag/security" rel="tag">security</a>
+</div>
+<p><em>SameSite Cookies with IIS</em> was first published on May 14, 2018.</p>
+<h3>If you like reading about iis, cookies, samesite, or security then you might also like:</h3>
+<ul>
+<li><a href="https://www.petefreitag.com/item/894.cfm" title="SameSite cookies with Apache">SameSite cookies with Apache</a></li>
+<li><a href="https://www.petefreitag.com/item/823.cfm" title="Blocking .svn and .git Directories on Apache or IIS">Blocking .svn and .git Directories on Apache or IIS</a></li>
+<li><a href="https://www.petefreitag.com/item/792.cfm" title="Client Variable Cookie CFGLOBALS Includes Session Ids">Client Variable Cookie CFGLOBALS Includes Session Ids</a></li>
+<li><a href="https://www.petefreitag.com/item/774.cfm" title="Changing the ColdFusion CFIDE Scripts Location">Changing the ColdFusion CFIDE Scripts Location</a></li>
+<li><a href="https://www.petefreitag.com/item/764.cfm" title="Setting up HTTPOnly Session Cookies for ColdFusion">Setting up HTTPOnly Session Cookies for ColdFusion</a></li>
+<li><a href="https://www.petefreitag.com/item/750.cfm" title="Is your ColdFusion Administrator Actually Public?">Is your ColdFusion Administrator Actually Public?</a></li>
+<li><a href="https://www.petefreitag.com/item/741.cfm" title="Request Filtering in IIS 7 Howto">Request Filtering in IIS 7 Howto</a></li>
+<li><a href="https://www.petefreitag.com/item/735.cfm" title="CFLogin Security Considerations">CFLogin Security Considerations</a></li>
+</ul>
+<div class="feature">
+<div class="featureLeft">
+<a href="https://foundeo.com/security/fuseguard/" title="FuseGuard Web Application Firewall for ColdFusion"><img src="./SameSite Cookies with IIS_files/fuseguard-logo.png" alt="FuseGuard Web App Firewall for ColdFusion" loading="lazy"></a>
+</div>
+<div class="featureRight">
+<p>The <a href="https://foundeo.com/security/fuseguard/">FuseGuard Web Application Firewall for ColdFusion &amp; CFML</a> is a high performance, customizable engine that blocks various attacks against your ColdFusion applications.</p>
+<ul>
+<li><a href="https://www.youtube.com/embed/0WB5nNouWL4" rel="nofollow">Watch a Video on FuseGuard</a></li>
+<li><a href="https://foundeo.com/security/eval/" rel="nofollow">Download Trial</a></li>
+</ul>
+</div>
+</div>
+<div id="cfbreak">
+<h3>CFBreak <br><small>The weekly newsletter for the CFML Community</small></h3>
+<form class="row newsletter" action="https://cfbreak.com/subscribe/" method="POST">
+<input type="hidden" name="referrer" id="referrer" value="https://www.petefreitag.com/item/850.cfm">
+<input type="email" name="email" id="email" required="required" placeholder="you@example.com" class="form-control">
+<button type="submit" class="btn btn-secondary col-sm-4">✔ Subscribe</button>
+</form>
+<br>
+</div>
+<h3><a name="comments">Comments</a></h3>
+<div class="comment">
+Great stuff, Pete. Thanks.<br><br>And in case anyone misses it in the related posts links above, note that he covered apache in a later post:<br><br><a href="https://www.petefreitag.com/item/894.cfm">https://www.petefreitag.com/item/894.cfm</a><br><br>And before someone asks, support is due to be added to cf (2018 and 2016) in a coming update (yes, frustratingly late). But this should help folks until then, and also those on earlier CF versions.
+<div class="by">by Charlie Arehart on 03/11/2020 at 10:06:02 AM UTC </div>
+</div>
+<div class="comment">
+Coldfusion 2018 published an update - ColdFusion 2018 Update 9 build 318650<br><br>Does this still apply?
+<div class="by">by Vlad on 04/22/2020 at 10:40:02 AM UTC </div>
+</div>
+<div class="comment">
+Great little fix - SOlved issues I was having trying to embed our finance app inside an iFrame - Thanks Pete
+<div class="by">by Martin Parry on 08/03/2020 at 1:36:22 AM UTC </div>
+</div>
+<div class="comment">
+Hi Pete, Is there a way to tell it to accept all cookies by default instead of specifying which ones? or is that not recommended? i wanted to set all of mine to SameSite=None;Secure
+<div class="by">by Basilios on 08/04/2020 at 9:05:54 PM UTC </div>
+</div>
+<div class="comment">
+Thank you very much for this article. Saved me in time critical situation, supporting an older .net version in production environment.
+<div class="by">by Chandra on 08/07/2020 at 8:14:42 PM UTC </div>
+</div>
+<div class="comment">
+Thanks, worked like a charm.
+<div class="by">by Akash Bavlecha on 09/01/2020 at 6:32:15 AM UTC </div>
+</div>
+<div class="comment">
+Thank you very much for this article.<br><br>This rewrite outboundrule is perfactly working in firefox but it is not working in chrome.<br><br>Please help me.
+<div class="by">by Dinesh Prajapati on 02/11/2021 at 12:53:03 PM UTC </div>
+</div>
+</div>
+<!-- google_ad_section_end -->
+</main>
+<footer>
+<div class="container">
+<img src="./SameSite Cookies with IIS_files/pete-freitag-med-opt.jpg" loading="lazy" height="200" width="200" align="left" title="Thats Me!" class="pete" style="padding:0px 8px 8px 0px"><div style="font-size:x-large"><b>Pete Freitag</b></div><br>
+<div id="desc">
+Pete is a husband and father located in scenic <a href="http://mvny.org/">Central New York</a> area. He owns a <a href="https://foundeo.com/">ColdFusion Consulting &amp; Products company, Foundeo Inc</a>.
+Pete is a frequent speaker at national conferences including Adobe ColdFusion Summit, Into The Box and others.
+He holds a BS in Software Engineering from Clarkson University.
+</div>
+<br><a href="https://foundeo.com/"><img src="./SameSite Cookies with IIS_files/foundeo-white.png" loading="lazy" alt="foundeo" class="foundeo" width="200" height="60"></a>
+</div>
+</footer>
+<script type="text/javascript" async="" src="./SameSite Cookies with IIS_files/ga.js.download"></script><script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-82573-6']);
+  _gaq.push(['_trackPageview']);
+  _gaq.push(['_trackPageLoadTime']); 
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+
+</body></html>

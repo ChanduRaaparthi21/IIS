@@ -1,0 +1,1 @@
+keytool -import -trustcacerts -alias coreuatj2ee2_server_2023 -file /home/siadmin/coreuat_new/coreuatj2ee2.ibl.crt -keystore cacerts
