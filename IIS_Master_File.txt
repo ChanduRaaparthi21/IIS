@@ -1,0 +1,517 @@
+ARR-PROXY-PASS   Rule#############################################
+<rewrite>
+		<globalRules>
+                <clear />
+                <rule name="ARR_server_proxy_SSL" enabled="true" patternSyntax="Wildcard" stopProcessing="true">
+                    <match url="*" />
+                    <conditions logicalGrouping="MatchAll" trackAllCaptures="false">
+                        <add input="{HTTPS}" pattern="on" />
+                    </conditions>
+                    <action type="Rewrite" url="https://10.24.114.156/{R:0}" />
+                </rule>
+                <rule name="ARR_server_proxy" enabled="true" patternSyntax="Wildcard" stopProcessing="true">
+                    <match url="*" />
+                    <conditions logicalGrouping="MatchAll" trackAllCaptures="false" />
+                    <action type="Rewrite" url="http://10.24.114.156/{R:0}" />
+                </rule>
+            </globalRules>
+        </rewrite>
+
+1) Cross-Origin Resource Sharing (CORS)
+Access-Control-Allow-Headers
+Content-Type, soapaction
+Access-Control-Allow-Methods
+GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Origin
+*
+2) Insecure Content Security Policy (CSP)/X-Frame-Options
+X-Content-Type-Options
+nosniff
+X-Frame-Options
+X-Frame-Options
+X-Xss-Protection
+1; mode=block
+
+3)  Browser Cache Enabled
+Cache-Control
+no-cache no-store must-revalidate
+
+
+4)  Missing HSTS Header
+Strict-Transport-Security
+max-age=63072000; includeSubDomains; preload
+max-age=31536000; includeSubdomains
+max-age=31536000; includeSubdomains; preload
+		
+		
+		
+
+Browser Cache Control		
+? Cache-Control: no-cache, no-store, must-revalidate, pre-check=0, post-check=0, max-age=0, s-maxage=0
+? Expires: 0
+? Pragma: no-cache
+
+X-Frame-Options: DENY
+X-Frame-Options: SAMEORIGIN
+X-Frame-Options: ALLOW-FROM https://example.com/
+X-Frame-Options: ALLOW-FROM SAMEDOMAIN, www.facebook.com/MyFBSite
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+X-Permitted-Cross-Domain-Policies: master-only;
+X-Permitted-Cross-Domain-Policies: none;
+Referrer-Policy: no-referrer
+Referrer-Policy: same-origin;
+Content-Security-Policy: default-src 'self'; media-src beagle.com beaglesecurity.com; script-src beagle.com; img-src *;
+Content-Security-Policy: frame-ancestors 'self' https://cfdbureau.indusind.com;
+Content-Security-Policy: frame-ancestors 'self' example.com *.example.net ;
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+Strict-Transport-Security: max-age=480; includeSubDomains; preload
+Strict-Transport-Security: max-age=480; includeSubDomains
+
+
+<deployment retail="true"/> 
+
+
+Enable HttpOnly Flag in IIS
+Edit the web.config file of your web application and add the following:
+
+<system.web>
+  ...
+  <httpCookies httpOnlyCookies="true" requireSSL="true" />
+  ...
+</system.web>
+Enable Secure Flag in IIS
+To enable secure flag in IIS, it is better to use URL Rewrite and add the following to your web.config file:
+
+view sourceprint?
+<system.webServer>
+  <rewrite>
+    <outboundRules>
+      <rule name="Use only secure cookies" preCondition="Unsecured cookie">
+        <match serverVariable="RESPONSE_SET_COOKIE" pattern=".*" negate="false" />
+        <action type="Rewrite" value="{R:0}; secure" />
+      </rule>
+      <preConditions>
+        <preCondition name="Unsecured cookie">
+          <add input="{RESPONSE_SET_COOKIE}" pattern="." />
+          <add input="{RESPONSE_SET_COOKIE}" pattern="; secure" negate="true" />
+        </preCondition>
+      </preConditions>
+    </outboundRules>
+  </rewrite>
+...
+</system.webServer>
+
+
+<rewrite>
+  <outboundRules>
+    <rule name="Add HttpOnly" preCondition="No HttpOnly">
+      <match serverVariable="RESPONSE_Set_Cookie" pattern=".*" negate="false" />
+      <action type="Rewrite" value="{R:0}; HttpOnly" />
+      <conditions>
+      </conditions>
+    </rule>
+    <preConditions>
+      <preCondition name="No HttpOnly">
+        <add input="{RESPONSE_Set_Cookie}" pattern="." />
+        <add input="{RESPONSE_Set_Cookie}" pattern="; HttpOnly" negate="true" />
+      </preCondition>
+    </preConditions>
+  </outboundRules>
+</rewrite>
+
+  <system.web>
+	<httpCookies httpOnlyCookies="true" requireSSL="true" />
+    <compilation debug="true" targetFramework="4.0"/>
+    <sessionState cookieName="Product"></sessionState>
+  </system.web>
+  
+      <!-- SECURITY HEADERS -->
+      <!-- Protects against Clickjacking attacks. -->
+      <add name="X-Frame-Options" value="SAMEORIGIN" />
+      <!-- Protects against Clickjacking attacks. -->
+      <add name="Strict-Transport-Security" value="max-age=31536000; includeSubDomains"/>
+      <!-- Protects against XSS injections.-->
+      <add name="X-XSS-Protection" value="1; mode=block" />
+      <!-- Protects against MIME-type confusion attack. -->
+      <add name="X-Content-Type-Options" value="nosniff" />
+      <!-- CSP modern XSS directive-based defence, used since 2014. -->
+      <add name="Content-Security-Policy" value="default-src 'self'; font-src *;img-src * data:; script-src *; style-src *;" />
+	  <add name="Content-Security-Policy" value="default-src 'self'; script-src 'unsafe-inline' 'self'; style-src 'unsafe-inline' 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'self' indusind.com *.indusind.com; img-src * data:;" />
+      <!-- Prevents from leaking referrer data over insecure connections. -->
+      <add name="Referrer-Policy" value="strict-origin" />
+	   To prevent all framing of your content use:
+
+Content-Security-Policy: frame-ancestors 'none' 
+To allow for your site only, use:
+
+Content-Security-Policy: frame-ancestors 'self' 
+To allow for trusted domain (my-trusty-site.com), do the following:
+
+Content-Security-Policy: frame-ancestors my-trusty-site.com
+	   
+<!-- Remove Web Server  Banner Information using URL Rewrite  Tool -->
+<rewrite>
+    <!-- Remove Server response headers (OWASP Security Measure) -->
+    <outboundRules rewriteBeforeCache="true">
+        <rule name="Remove Web-Server Banner">
+            <match serverVariable="RESPONSE_Server" pattern=".+" />
+
+            <!-- Use custom value for the Server info -->
+            <action type="Rewrite" value="Your Custom Value Here." />
+        </rule>
+    </outboundRules>
+</rewrite>
+</system.webServer>
+
+
+#### IIS Redirect http on port 8880 to https on port 8443
+
+<rule name="Redirect with port" stopProcessing="true">
+     <match url=".*" />
+     <conditions>
+          <add input="{HTTP_HOST}" pattern="^(.*):8880$" />
+     </conditions>
+     <action type="Redirect" url="https://{C:1}:8443/{R:0}" />
+</rule>
+
+
+Acceptable instance-manipulations for the request.#####
+Name: A-IM
+Value: feed
+
+Media type(s) that is/are acceptable for the response.#####
+Name: Accept
+Value: text/html
+
+Character sets that are acceptable.#####
+Name: Accept-Charset
+Value: utf-8
+
+Acceptable version in time.#####
+Name: Accept-Datetime
+Value: Thu, 31 May 2007 20:35:00 GMT
+
+The length of the request body in octets.####
+Name: Content-Length
+Value: 100
+
+For js,css, and image files####
+Name: Cache-Control
+Value: public, max-age=31536000, no Etag, no Last-Modified settings
+
+List of acceptable encodings#####
+Name: Accept-Encoding
+Value: gzip, deflate
+
+List of acceptable human languages for response#####
+Name: Accept-Language
+Value: en-US
+
+Initiates a request for cross-origin resource sharing with Origin####
+Name: Access-Control-Request-Method
+Value: GET
+
+Authentication credentials for HTTP authentication.####
+Name: Authorization
+Value: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
+
+HTML page or Browser Cache Enabled####
+Name: Cache-Control
+Value : no-cache, no-store, must-revalidate, private, public, max-age=43200000
+
+IMPROPER CASHE CONTROL#######
+Cache-Control: no-cache, no-store, must-revalidate
+Pragma: no-cache
+Expires: 0
+
+CONTENT SECURITY POLICY#####
+Name : Content-Security-Policy
+Value : default-src https: data: 'unsafe-inline' 'unsafe-eval'
+Value : default-src 'self'
+Value : default-src 'self' https://cdnjs.cloudflare.com
+Value : Content-Security-Policy" value="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' https://maxcdn.bootstrapcdn.com
+
+HTTP STRICT TRANSPORT SECURITY#####
+Name : Strict-Transport-Security 
+Value : max-age=31536000; includeSubdomains
+
+HTTP PUBLIC KEY PINNING#####
+Name : Public-Key-Pins
+Value : pin-sha256='MHJYVThihUrJcxW6wcqyOISTXIsInsdj3xK8QrZbHec='; includeSubdomains; max-age=2592000
+
+X-FRAME-OPTIONS####
+Name : X-Frame-Options
+Value : SAMEORIGIN
+
+X-XSS-PROTECTION####
+Name : X-Xss-Protection
+Value : 1; mode=block
+
+X-CONTENT-TYPE-OPTIONS####
+Name : X-Content-Type-Options
+Value : nosniff
+
+X-POWERED-BY####
+Name : X-Powered-By
+Value : Hello You
+
+######X-ASPNET-VERSION####
+<system.web>
+    <httpRuntime enableVersionHeader="false" />
+</system.web>
+
+#######Remove X-Powered-By: ARR/ xxx##########
+%windir%\system32\inetsrv\appcmd set config  -section:system.webServer/proxy /arrResponseHeader:"False"  /commit:apphost
+#############Removing the header in the reverse Proxy scenario. 
+Using AppCmd.exe disable the response header.
+“appcmd.exe set config  -section:system.webServer/proxy /arrResponseHeader:"False"  /commit:apphost” 
+##################Removing the header in the Web Farm Scenario.
+If you have a Web Farm called “Test1234” like I do then you can again use AppCmd.exe to disable the header. 
+”appcmd.exe set config  -section:webFarms /[name='Test1234'].applicationRequestRouting.protocol.arrResponseHeader:"False"  /commit:apphost” 
+#######SERVER BANNER####
+
+Step 1 :-  Create Server Variables by add ..
+Add "RESPONSE_SERVER"
+Step 2 :-  Create Rule 
+Click on  Add Rules  > Select  Outbound 
+Change to Server_Variable
+Add  RESPONSE_SERVER
+ADD Value    “.+”
+Keep Rewrite and add fake name i.e. Let's Fly 
+Step 3 :- ead to the IIS Manager and select your site, then URL Rewrite.
+1- Select Server Variables and then add a new Server Variable called RESPONSE_SERVER.
+2- add below Line in web.conf under rewrite tag
+<rewrite>    
+  <outboundRules rewriteBeforeCache="true">
+    <rule name="Remove Server header">
+      <match serverVariable="RESPONSE_Server" pattern=".+" />
+      <action type="Rewrite" value="" />
+    </rule>
+  </outboundRules>
+</rewrite>
+
+###############Remove the HTTPAPI/2.0 header###################
+
+Workaround for Self Host WCF Services:
+Set below registry flag to: 2
+HKLM\SYSTEM\CurrentControlSet\Services\HTTP\Parameters\DisableServerHeader
+
+Setting this to 2 will ensure that self host WCF services no longer sends the SERVER header and thus ensure we are security compliant.
+Please note that this disables ALL server headers.
+
+The default value of 0 enables the header, and the value of 1 disables server header from DRIVER (http.sys), but app can still have headers.
+
+Workaround for IIS hosted applications
+1. Stop the World Wide Web Publishing Service (if IIS services are not required on the server).
+2. If they are required, then we would need to use the IIS URL Rewrite module and delete the server header itself.
+Refer: https://blogs.msdn.microsoft.com/varunm/2013/04/23/remove-unwanted-http-response-headers/
+
+####COOKIES SETTING####
+If Using SSL Certificate :-
+<httpCookies domain="" httpOnlyCookies="true" requireSSL="true" />
+
+If Using Nossl :-
+<httpCookies domain="" httpOnlyCookies="true" />
+
+################Remove Microsoft-HTTPAPI/2.0###########
+Please note that this method is used only when the Server header comes as “Microsoft-HTTPAPI/2.0”.
+>>Create a DWORD entry called DisableServerHeader in the following Registry key and set the value to 1.
+		HKLM\SYSTEM\CurrentControlSet\Services\HTTP\Parameters
+
+####Missing Path Attribute In Session Cookie####
+>>>>>>
+<configuration>
+  <system.web>
+    <!-- Prevent access to cookies from other sub-domains -->
+    <httpCookies domain="host.*.com" />
+  </system.web>
+</configuration>
+<httpCookies httpOnlyCookies="true" requireSSL="true" />
+
+<httpCookies domain="domain.com" httpOnlyCookies="true" requireSSL="true" />
+<sessionState cookieName="Product"></sessionState>
+
+#####Cross-Origin Resource Sharing (CORS)####
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	<add name="Access-Control-Allow-Origin" value="*" />  
+    <add name="Access-Control-Allow-Headers" value="Content-Type, soapaction" />
+    <add name="Access-Control-Allow-Methods" value="GET, POST, PUT, DELETE, OPTIONS" /> 
+    <add name="X-XSS-Protection" value="1; mode=block" />
+    <add name="X-Content-Type-Options" value="nosniff" />
+	
+	<add name="X-Frame-Options" value="SAMEORIGIN" />
+    <add name="Strict-Transport-Security" value="max-age=31536000; includeSubDomains"/>
+    <add name="Content-Security-Policy" value="default-src 'self'; script-src 'unsafe-inline' 'self'; style-src 'unsafe-inline' 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;" />
+	
+	
+	
+    <add name="Referrer-Policy" value="strict-origin" />
+	<add name="Cache-Control" value="no-cache, no-store, must-revalidate, pre-check=0, post-check=0, max-age=0, s-maxage=0" />
+	<add name="Pragma" value="no-cache" />
+	<add name="Expires" value="0" />
+	
+#####Microsoft ASP.NET MS-DOS Device Name DoS######
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+Change the maximum URL length to 2KB by specifying 2048.
+Change the maximum query string length to 1KB by specifying 1024.
+Deny access to unlisted HTTP verbs by clearing the Allow unlisted verbs check box.
+deny a URL sequence>>>>>>>.. & :
+deny access to a specific file name extension>>>>inc
+add a hidden segment>>>>>_private
+add limits for HTTP headers>>>>>>Content-type header to 100 bytes Size Limit.
+deny an HTTP verb>>>>>>>>>>>TRACE
+<configuration>
+   <system.webServer>
+      <security>
+         <requestFiltering>
+            <denyUrlSequences>
+               <add sequence=".." />
+               <add sequence=":" />
+            </denyUrlSequences>
+            <fileExtensions allowUnlisted="false" />
+            <requestLimits maxUrl="2048" maxQueryString="1024" />
+            <verbs allowUnlisted="false" />
+         </requestFiltering>
+      </security>
+   </system.webServer>
+</configuration>
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+1) Open web.config file. Should be located: C:\inetpub\SolarWinds\web.config
+2) Search for the row: <httpErrors errorMode="Detailed" />
+3) Change this entry to:
+<httpErrors errorMode="Detailed" existingResponse="PassThrough" />
+
+<system.webServer>
+      <httpErrors errorMode="DetailedLocalOnly" defaultResponseMode="File" >
+         <remove statusCode="500" />
+         <error statusCode="500"
+            prefixLanguageFilePath="C:\Contoso\Content\errors"
+            path="500.htm" />
+       </httpErrors>
+</system.webServer>
+	
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	<system.webServer>
+	<security>
+      <requestFiltering allowHighBitCharacters="false">
+        <verbs allowUnlisted="false">
+          <add verb="OPTIONS" allowed="false" />
+          <add verb="TRACE" allowed="false" />
+          <add verb="HEAD" allowed="false" />
+          <add verb="PUT" allowed="false" />
+          <add verb="DELETE" allowed="false" />
+          <add verb="CONNECT" allowed="false" />
+          <add verb="GET" allowed="true" />
+          <add verb="POST" allowed="true" />
+        </verbs>
+                <denyUrlSequences>
+                    <add sequence=".." />
+                    <add sequence=":" />
+                    <add sequence="\" />
+                    <add sequence="/AUX/" />
+                    <add sequence="/CON/" />
+                    <add sequence="/NUL/" />
+                    <add sequence="/PRN/" />
+                    <add sequence="/CLOCK$/" />
+                    <add sequence="/COM4/" />
+                    <add sequence="/COM3/" />
+                    <add sequence="/COM2/" />
+                    <add sequence="/LPT2/" />
+                    <add sequence="/LPT1/" />
+                    <add sequence="/COM1/" />
+                    <add sequence="/LPT4/" />
+                </denyUrlSequences>
+                <alwaysAllowedUrls>
+                </alwaysAllowedUrls>
+      </requestFiltering>
+    </security>	
+    </system.webServer>
+	
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-------------------------VAPT-TEST-COMMAND---------------------------------------
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+curl -X GET "127.0.0.1" --head
+curl -LI 127.0.0.1
+
+*************************************************************************************************
+ASP.NET ValidateRequest Filters Bypass Cross-Site Scripting Vulnerability
+*************************************************************************************************
+"The standard solution would be to upgrade to a non-vulnerable framework, such as ASP.NET version 4. ASP.NET version 1 is 10 years old, and version 2 is 7 years old, and so it probably does make sense to migrate to a more current framework for your Internet Facing PCI Infrastructure, which should be kept up to date with the latest versions and security patches."
+how does one fix this issue, other than switching to newer version of .net Frameworks or reviewing web.config for an application
+
+Perhaps adding the following,
+
+<configuration>
+   <system.web>
+<pages validateRequest="false" maintainScrollPositionOnPostBack="false" />
+   </system.web>
+</configuration>
+
+or 
+
+<configuration>
+   <system.web>
+      <pages validateRequest="false" />
+   </system.web>
+</configuration>
+
+================================================================
+Server	Server
+Strict-Transport-Security	max-age=63072000; includeSubDomains; preload
+Referrer-Policy	same-origin
+Feature-Policy	accelerometer 'none'; camera 'none'; geolocation 'none'; gyroscope 'none'; magnetometer 'none'; microphone 'none'; payment 'none'; usb 'none'
+Access-Control-Allow-Methods	POST, GET
+Access-Control-Max-Age	1000
+Access-Control-Allow-Headers	x-requested-with, Content-Type, origin, authorization, accept, client-security-token
+X-Frame-Options	SAMEORIGIN
+X-Content-Type-Options	nosniff
+Content-Security-Policy	default-src 'self'; connect-src 'self'; img-src 'self' data: 'unsafe-eval' ; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' ; font-src 'self' data:
+Last-Modified	Fri, 12 Oct 2018 18:46:32 GMT
+Accept-Ranges	bytes
+Content-Length	110
+Vary	Accept-Encoding,User-Agent
+X-XSS-Protection	1; mode=block
+X-Content-Type-Options	nosniff
+Content-Security-Policy	default-src *; style-src 'self' 'unsafe-inline'; 
+
+Content-Security-Policy   (working.......)
+default-src 'self'; script-src 'unsafe-inline' 'self' https://www.google-analytics.com/ https://www.googletagmanager.com/; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/; font-src 'self' https://fonts.gstatic.com/; frame-src 'self'; connect-src 'self' https://www.google-analytics.com/ https://stats.g.doubleclick.net/; img-src 'self' https://www.google.co.in/ https://www.google.com/ ;
+
+
+script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data:;
+Connection	close
+Content-Type	text/html
+
+            <customHeaders>
+			<add name="Access-Control-Allow-Origin" value="*" />  
+    		<add name="Access-Control-Allow-Headers" value="Content-Type, soapaction" />
+    		<add name="Access-Control-Allow-Methods" value="GET, POST, PUT, DELETE, OPTIONS" /> 
+    		<add name="X-XSS-Protection" value="1; mode=block" />
+    		<add name="X-Content-Type-Options" value="nosniff" />
+			<add name="X-Frame-Options" value="SAMEORIGIN" />
+    		<add name="Strict-Transport-Security" value="max-age=31536000; includeSubDomains"/>
+    		<add name="Referrer-Policy" value="strict-origin" />
+			<add name="Cache-Control" value="no-cache, no-store, must-revalidate, pre-check=0, post-check=0, max-age=0, s-maxage=0" />
+			<add name="Pragma" value="no-cache" />
+			<add name="Expires" value="0" />
+            <add name="Content-Security-Policy" value=" script-src https://*.indusind.com; frame-ancestors 'self'" />
+            </customHeaders>
+			
+			
+=============================================================
+
+openssl req -noout -modulus -in  server.csr | openssl md5
+(stdin)= 395cb6f3a0def959d81f8f6a26d12749
+openssl rsa -noout -modulus -in myserver.key | openssl md5
+(stdin)= 395cb6f3a0def959d81f8f6a26d12749
+openssl x509 -noout -modulus -in ssl-bundle.crt | openssl md5
+(stdin)= 395cb6f3a0def959d81f8f6a26d12749
+
+===============================================================
+
+Staging Server IP
+10.24.120.89
