@@ -1,5 +1,15 @@
+To create CSR and generate private key in Linux with using opessl commands.
+
+
 openssl req -new -newkey rsa:2048 -nodes -keyout junedemocsr.key -out junecsrdemo.csr
  
 openssl x509 -req -in junecsrdemo.csr -signkey junecsrdemo.key -out junecsrdemo.cer
  
 openssl pkcs12 -export -out junecsrdemo.pfx -inkey junecsrdemo.key -in junecsrdemo.cer
+
+Configure all the certificates(server,intermediate and root in linux) to get the required certificate fomat.
+
+openssl pkcs12 -export -out junecsrdemo.pfx -inkey junecsrdemo.key.pem -in all.cer
+
+
+To verify the certificate:- openssl pkcs12 -info -in junecsrdemo.pfx
