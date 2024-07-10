@@ -19,3 +19,5 @@ To check the fingerprint of a certificate in windows command prompt.
 Goto the java 1.8 bin path then follow the bellow command..
 
 Keytool.exe -list -v -keystore "certificate path\cerifictename" then  you can see the certificate information in windows command prompt.
+
+openssl pkcs12 -in sample.pfx -nocerts -nodes -out sample.key :- To extract private key from certificate
